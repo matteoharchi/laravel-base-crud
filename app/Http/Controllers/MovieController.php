@@ -37,16 +37,30 @@ class MovieController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
+        $request->validate([
+            'title'=>'required|max:100|min:2',
+            'genre'=>'required|max:100|min:2',
+            'director'=>'required|max:100|min:4',
+            'year'=>'required|numeric',
+
+
+        ]);
         $newMovie= new Movie;
-        $newMovie->title = $data['title'];
-        $newMovie->genre = $data['genre'];
-        $newMovie->director = $data['director'];
-        $newMovie->year = $data['year'];
-        $newMovie->save();
+        // $newMovie->title = $data['title'];
+        // $newMovie->genre = $data['genre'];
+        // $newMovie->director = $data['director'];
+        // $newMovie->year = $data['year'];
+        $newMovie->fill($data);
+        $saved = $newMovie->save();
+
+        if ($saved) {
+            return redirect()->route('movies.index');
+        }
 
         if (empty($data['title']) || empty($data['genre']) || empty($data['director']) || empty($data['year'])) {
             return back()->withInput();
         }
+        
     }
 
     /**
@@ -55,9 +69,10 @@ class MovieController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Movie $movie)
     {
-        //
+        // $movie= Movie::find($id); non mi serve più avendo impostato movie come argomento
+        return view('show', compact('movie'));
     }
 
     /**
@@ -66,9 +81,9 @@ class MovieController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Movie $movie)
     {
-        //
+        return view('create', compact('movie'));
     }
 
     /**
@@ -78,9 +93,13 @@ class MovieController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Movie $movie)
     {
-        //
+        
+        $data = $request->all();
+        $movie->update($data);
+        return redirect()->route('movies.index');
+
     }
 
     /**
@@ -89,8 +108,10 @@ class MovieController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Movie $movie)
     {
-        //
+        $movie->delete();
+    
+        return redirect()->route('movies.index');
     }
 }
